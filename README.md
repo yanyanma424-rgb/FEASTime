@@ -1,240 +1,164 @@
-\# FEASTime <img src="man/figures/logo.png" align="right" height="120" alt="" />
+# FEASTime
 
+![R](https://img.shields.io/badge/R-%3E%3D3.6.0-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+FEASTime extends the [FEAST](https://github.com/cozygene/FEAST) microbial source-tracking algorithm to **longitudinal time-series data** using a Markov chain-based iterative EM framework. Instead of a single static attribution, FEASTime tracks how microbial communities are inherited, replaced, and newly introduced across successive time points — making it well-suited for fermentation, gut development, or any process with ordered sampling stages.
 
-<!-- badges: start -->
+If you use this package, please cite [Ma et al., 2025](#citation) pending publication.
 
-!\[R](https://img.shields.io/badge/R-%3E%3D3.6.0-blue)
+## Installation
 
-!\[License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-<!-- badges: end -->
-
-
-
-\*\*FEASTime\*\* extends the \[FEAST](https://github.com/cozygene/FEAST) microbial
-
-source-tracking algorithm to \*\*longitudinal time-series data\*\* using a
-
-Markov chain-based iterative EM framework.
-
-
-
-Instead of a single static attribution, FEASTime tracks how microbial
-
-communities are inherited, replaced, and newly introduced across successive
-
-time points — making it well-suited for fermentation, gut development, or
-
-any process with ordered sampling stages.
-
-
-
----
-
-
-
-\## Key features
-
-
-
-\- \*\*Dynamic Markov chain tracking\*\* — each stage is simultaneously a sink
-
-&nbsp; (receiving microbes) and a source for the next stage
-
-\- \*\*Cumulative contribution tracing\*\* — quantify how much of the final
-
-&nbsp; community traces back to each original source
-
-\- \*\*Rarefaction support\*\* — optional depth normalisation before EM
-
-&nbsp; (`rarefaction\_depth` parameter)
-
-\- \*\*Biologically-informed Unknown initialisation\*\* — mirrors the
-
-&nbsp; `unknown\_initialize\_1` heuristic from FEAST for faster, more stable
-
-&nbsp; convergence on sparse OTU tables
-
-\- \*\*Continuous source exposure\*\* — optional `allow\_continuous\_sources`
-
-&nbsp; flag models ongoing environmental inoculation at every transfer step
-
-\- \*\*Built-in visualisation\*\* — stacked bar and trend-line plots
-
-
-
----
-
-
-
-\## Installation
-
+The easiest way to install FEASTime is via `devtools`:
 ```r
-
-\# Install from GitHub (requires devtools)
-
-devtools::install\_github("MaYanyan/FEASTime")
-
+devtools::install_github("MaYanyan/FEASTime")
 ```
 
+## Quick Start
 
-
----
-
-
-
-\## Quick start
-
+FEASTime requires two inputs: an OTU count table and a metadata table.
 ```r
-
 library(FEASTime)
 
+# Load example data
+abu <- read.csv(system.file("extdata", "example_abundance.csv", package = "FEASTime"), row.names = 1)
+meta <- read.csv(system.file("extdata", "example_metadata.csv", package = "FEASTime"), row.names = 1)
 
-
-\# abundance\_table: samples x OTUs integer count matrix (row names = sample IDs)
-
-\# metadata:        data.frame with columns Env, SourceSink ("Source"/"Sink"), id
-
-
-
-result <- run\_feastime(
-
-&nbsp; abundance\_table  = abu,
-
-&nbsp; metadata         = meta,
-
-&nbsp; stage\_order      = c("S0", "S1", "S2", "S3"),
-
-&nbsp; source\_types     = c("Daqu1", "Daqu2"),
-
-&nbsp; rarefaction\_depth = 5000,   # recommended when depths differ
-
-&nbsp; n\_restarts       = 10
-
+# Run FEASTime
+result <- run_feastime(
+  abundance_table   = abu,
+  metadata          = meta,
+  stage_order       = c("S0", "S1", "S2"),
+  source_types      = c("Source1", "Source2"),
+  rarefaction_depth = 100,
+  n_restarts        = 10
 )
 
+# Visualise
+plot_contributions(result)
+plot_trends(result)
 
-
-\# Visualise
-
-plot\_contributions(result)
-
-plot\_trends(result)
-
-
-
-\# Summary table
-
-summarise\_feastime(result)
-
+# Summary table
+summarise_feastime(result)
 ```
 
+## File Formats
 
+### abundance_table
 
----
+A samples × OTUs integer count matrix with sample IDs as row names. Values must be non-negative integers.
+```
+        OTU_1  OTU_2  OTU_3  OTU_4  OTU_5
+Src1_1    300    120      0     45    200
+Src1_2    280    110      0     50    210
+Src2_1     10     20    400    300      5
+S0_1      150     80    100    120    130
+S1_1      100     50    150    130     90
+S2_1       60     30    200    180     60
+```
 
+### metadata
 
+A data frame with sample IDs as row names and three required columns:
+```
+        Env      SourceSink   id
+Src1_1  Source1  Source       Src1_1
+Src1_2  Source1  Source       Src1_2
+Src2_1  Source2  Source       Src2_1
+S0_1    S0       Sink         S0_1
+S1_1    S1       Sink         S1_1
+S2_1    S2       Sink         S2_1
+```
 
-\## Input format
+- `Env`: environment/group label matching `stage_order` or `source_types`
+- `SourceSink`: must be exactly `"Source"` or `"Sink"`
+- `id`: sample ID, must match row names
 
+Row names of `abundance_table` and `metadata` must be identical and in the same order.
 
-
-\### `abundance\_table`
-
-
-
-| | OTU\_1 | OTU\_2 | … |
-
-|---|---|---|---|
-
-| Daqu1\_rep1 | 120 | 0 | … |
-
-| S0\_rep1 | 45 | 230 | … |
-
-
-
-Rows = samples, columns = OTUs. Integer counts recommended.
-
-
-
-\### `metadata`
-
-
-
-| | Env | SourceSink | id |
-
-|---|---|---|---|
-
-| Daqu1\_rep1 | Daqu1 | Source | Daqu1\_rep1 |
-
-| S0\_rep1 | S0 | Sink | S0\_rep1 |
-
-
-
-Row names must match `abundance\_table` row names exactly.
-
-
-
----
-
-
-
-\## Parameters
-
-
+## Parameters
 
 | Parameter | Default | Description |
+|-----------|---------|-------------|
+| `stage_order` | required | Ordered vector of sink stage labels, e.g. `c("S0","S1","S2")` |
+| `source_types` | required | Env labels of original external sources, e.g. `c("Source1","Source2")` |
+| `rarefaction_depth` | `NULL` | Rarefy all samples to this depth before EM. Recommended: `min(rowSums(abundance_table))` |
+| `allow_continuous_sources` | `FALSE` | If `TRUE`, include original sources at every transfer step to model ongoing environmental inoculation |
+| `n_restarts` | `10` | Number of EM random restarts per sample |
+| `max_iter` | `1000` | Maximum EM iterations per restart |
+| `tol` | `1e-6` | \|Δ log-likelihood\| convergence threshold |
+| `output_dir` | `NULL` | Directory to save per-stage CSV results (created if needed) |
+| `verbose` | `TRUE` | Print progress messages |
 
-|---|---|---|
+## Output
 
-| `stage\_order` | required | Ordered vector of sink stage labels |
+`run_feastime()` returns a named list:
 
-| `source\_types` | required | Env labels of original external sources |
+- **`per_stage_results`** — per-sample source proportions at each stage
+- **`mean_profiles`** — mean source proportions per stage
+- **`cumulative_contributions`** — cumulative contributions traced back to original sources at each stage
+- **`stage_order`** — input stage order
+- **`source_types`** — input source types
+- **`call_info`** — analysis parameters and timestamp
 
-| `rarefaction\_depth` | `NULL` | Rarefy all samples to this depth before EM |
+If `output_dir` is set, two types of CSV files are saved:
+- `per_sample_<stage>.csv` — per-sample results at each stage
+- `cumulative_contributions.csv` — cumulative contributions across all stages
 
-| `allow\_continuous\_sources` | `FALSE` | Include original sources at every transfer step |
+## Theory
 
-| `n\_restarts` | `10` | EM random restarts per sample |
+FEASTime models microbial community succession as a Markov chain. At each time point T:
 
-| `tol` | `1e-6` | \\|Δ log-likelihood\\| convergence threshold |
+1. **Initial stage** — the EM algorithm estimates what proportion of the sink community at T=0 comes from each original source (e.g. Daqu types in baijiu fermentation).
+2. **Transfer stages** — for each subsequent stage, the previous stage's community is treated as the known source. The EM estimates what fraction was inherited from T-1 versus newly introduced from the environment (Unknown).
+3. **Cumulative tracing** — by multiplying inherited fractions across stages, FEASTime traces what proportion of the final community can be attributed to each original source.
 
-| `output\_dir` | `NULL` | Directory to save per-stage CSV results |
+This differs from standard FEAST, which performs independent static attribution at a single time point. FEASTime fills the gap for longitudinal study designs.
 
+## Usage Examples
 
+**Standard run:**
+```r
+result <- run_feastime(abu, meta,
+                       stage_order  = c("S0", "S1", "S2"),
+                       source_types = c("Source1", "Source2"),
+                       n_restarts   = 10)
+```
 
----
+**With rarefaction:**
+```r
+result <- run_feastime(abu, meta,
+                       stage_order       = c("S0", "S1", "S2"),
+                       source_types      = c("Source1", "Source2"),
+                       rarefaction_depth = min(rowSums(abu)),
+                       n_restarts        = 10)
+```
 
+**With continuous source exposure** (models ongoing environmental inoculation at every stage):
+```r
+result <- run_feastime(abu, meta,
+                       stage_order              = c("S0", "S1", "S2"),
+                       source_types             = c("Source1", "Source2"),
+                       allow_continuous_sources = TRUE,
+                       n_restarts               = 10)
+```
 
+**Save results to disk:**
+```r
+result <- run_feastime(abu, meta,
+                       stage_order  = c("S0", "S1", "S2"),
+                       source_types = c("Source1", "Source2"),
+                       output_dir   = "my_results/")
+```
 
-\## Citation
-
-
+## Citation
 
 If you use FEASTime, please cite:
 
+> Ma Y. et al. (2025). FEASTime: Extending FEAST for microbial source tracking in multi-source and multi-sink time-series samples. *(submitted)*
 
+> Shenhav L. et al. (2019). FEAST: fast expectation-maximization for microbial source tracking. *Nature Methods*, 16, 627–632.
 
-> Ma Y. et al. (2025). FEASTime: Extending FEAST for microbial source
-
-> tracking in multi-source and multi-sink time-series samples. \*(submitted)\*
-
-
-
-> Shenhav L. et al. (2019). FEAST: fast expectation-maximization for
-
-> microbial source tracking. \*Nature Methods\*, 16, 627–632.
-
-
-
----
-
-
-
-\## License
-
-
+## License
 
 MIT © 2025 Ma Yanyan
-
