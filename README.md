@@ -5,7 +5,7 @@
 
 FEASTime extends the [FEAST](https://github.com/cozygene/FEAST) microbial source-tracking algorithm to **longitudinal time-series data** using a Markov chain-based iterative EM framework. Instead of a single static attribution, FEASTime tracks how microbial communities are inherited, replaced, and newly introduced across successive time points — making it well-suited for fermentation, gut development, or any process with ordered sampling stages.
 
-If you use this package, please cite [Ma et al., 2025](#citation) pending publication.
+If you use this package, please cite [Ma Y. (2025).](#citation) pending publication.
 
 ## Installation
 
@@ -155,7 +155,9 @@ result <- run_feastime(abu, meta,
 
 If you use FEASTime, please cite:
 
-> Ma Y. et al. (2025). FEASTime: Extending FEAST for microbial source tracking in multi-source and multi-sink time-series samples. *(submitted)*
+> Ma Y. (2025). *FEASTime: Extending FEAST for microbial source tracking in time-series samples.* R package version 0.1.0. https://github.com/yanyanma424-rgb/FEASTime
+
+Also cite the original FEAST paper:
 
 > Shenhav L. et al. (2019). FEAST: fast expectation-maximization for microbial source tracking. *Nature Methods*, 16, 627–632.
 
