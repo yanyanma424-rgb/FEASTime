@@ -1,0 +1,19 @@
+# R build artifacts
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Package build
+*.tar.gz
+*.zip
+/doc/
+/Meta/
+
+# testthat snapshots
+tests/testthat/_snaps/
+
+# OS files
+.DS_Store
+Thumbs.db

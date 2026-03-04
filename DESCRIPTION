@@ -1,0 +1,22 @@
+Package: FEASTime
+Type: Package
+Title: Extending FEAST for Microbial Source Tracking in Time-Series Samples
+Version: 0.1.0
+Authors@R: person("Ma", "Yanyan", email = "ma15091227920@163.com", role = c("aut", "cre"))
+Description: Extends the FEAST EM algorithm to longitudinal time-series data using
+    a Markov chain-based iterative framework. Supports rarefaction, biologically-informed
+    unknown source initialisation, and optional continuous source exposure modelling.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 3.5.0)
+Imports:
+    stats,
+    utils,
+    ggplot2
+RoxygenNote: 7.3.3
+Suggests:
+    testthat (>= 3.0.0),
+    writexl
+Config/testthat/edition: 3
+

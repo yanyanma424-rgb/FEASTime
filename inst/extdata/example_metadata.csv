@@ -1,0 +1,11 @@
+,Env,SourceSink,id
+Src1_1,Source1,Source,Src1_1
+Src1_2,Source1,Source,Src1_2
+Src2_1,Source2,Source,Src2_1
+Src2_2,Source2,Source,Src2_2
+S0_1,S0,Sink,S0_1
+S0_2,S0,Sink,S0_2
+S1_1,S1,Sink,S1_1
+S1_2,S1,Sink,S1_2
+S2_1,S2,Sink,S2_1
+S2_2,S2,Sink,S2_2

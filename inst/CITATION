@@ -1,0 +1,29 @@
+citHeader("To cite FEASTime in publications use:")
+
+citEntry(
+  entry   = "Article",
+  title   = "FEASTime: Extending FEAST for microbial source tracking in multi-source and multi-sink time-series samples",
+  author  = personList(person("Yanyan", "Ma")),
+  journal = "Submitted",
+  year    = "2025",
+  textVersion = paste(
+    "Ma Y. et al. (2025).",
+    "FEASTime: Extending FEAST for microbial source tracking",
+    "in multi-source and multi-sink time-series samples. Submitted."
+  )
+)
+
+citEntry(
+  entry   = "Article",
+  title   = "FEAST: fast expectation-maximization for microbial source tracking",
+  author  = personList(person("Liat", "Shenhav")),
+  journal = "Nature Methods",
+  year    = "2019",
+  volume  = "16",
+  pages   = "627--632",
+  textVersion = paste(
+    "Shenhav L. et al. (2019).",
+    "FEAST: fast expectation-maximization for microbial source tracking.",
+    "Nature Methods, 16, 627-632."
+  )
+)
